@@ -79,6 +79,7 @@ import org.invokevirtual.launcher.system.AppCatalog
 import org.invokevirtual.launcher.system.AppIconAsset
 import org.invokevirtual.launcher.system.InstalledApp
 import org.invokevirtual.launcher.ui.components.InteractiveColorPicker
+import org.invokevirtual.launcher.ui.components.NotificationBadgeBox
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
 import org.invokevirtual.launcher.ui.theme.toContainerShape
 import kotlin.math.roundToInt
@@ -352,31 +353,33 @@ private fun DockActionSlotButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        when {
-            iconAsset != null && (iconStyle == IconStyle.FULL_COLOR || iconAsset!!.monochrome == null) -> {
-                Image(
-                    bitmap = iconAsset!!.fullColor,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape),
-                )
-            }
-            iconAsset?.monochrome != null -> {
-                Image(
-                    bitmap = iconAsset!!.monochrome!!,
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-            else -> {
-                Icon(
-                    imageVector = action.fallbackIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                )
+        NotificationBadgeBox(apps = listOfNotNull(action.app?.key), iconSize = 38.dp) {
+            when {
+                iconAsset != null && (iconStyle == IconStyle.FULL_COLOR || iconAsset!!.monochrome == null) -> {
+                    Image(
+                        bitmap = iconAsset!!.fullColor,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape),
+                    )
+                }
+                iconAsset?.monochrome != null -> {
+                    Image(
+                        bitmap = iconAsset!!.monochrome!!,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+                else -> {
+                    Icon(
+                        imageVector = action.fallbackIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
             }
         }
     }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,6 +44,8 @@ import org.invokevirtual.launcher.data.TileSpan
 import org.invokevirtual.launcher.data.WidgetHeightTier
 import org.invokevirtual.launcher.system.DefaultLauncherHelper
 import org.invokevirtual.launcher.system.rememberWallpaperLegibility
+import org.invokevirtual.launcher.ui.components.LocalNotificationBadges
+import org.invokevirtual.launcher.ui.components.NotificationBadges
 import org.invokevirtual.launcher.ui.home.HomeCanvas
 import org.invokevirtual.launcher.ui.home.HomeCanvasActions
 import org.invokevirtual.launcher.ui.home.buildDefaultCanvasBlocks
@@ -87,6 +90,7 @@ class MainActivity : ComponentActivity() {
                 initialValue = HomeCanvasState(),
             )
             val installedApps by container.appCatalog.apps.collectAsStateWithLifecycle()
+            val badgeCounts by container.notificationBadgeStore.counts.collectAsStateWithLifecycle()
             val invokeViewModel: InvokeViewModel = viewModel(
                 factory = InvokeViewModel.Factory(
                     appCatalog = container.appCatalog,
@@ -559,114 +563,118 @@ class MainActivity : ComponentActivity() {
                 preferDarkWallpaperBars = settings.effectiveAmoledBlack ||
                     !wallpaperLegibility.supportsDarkText,
             ) {
-                HomeCanvas(
-                    settings = settings,
-                    canvasState = canvasState,
-                    installedApps = installedApps,
-                    canvasActions = canvasActions,
-                    invokeUiState = invokeUiState,
-                    studioActions = studioActions,
-                    widgetHost = container.widgetHost,
-                    appCatalog = container.appCatalog,
-                    onSelectWorkspaceMode = { mode ->
-                        scope.launch { container.settingsStore.setWorkspaceMode(mode) }
-                    },
-                    onLaunchApp = { app, bounds ->
-                        container.appCatalog.launch(
-                            app = app,
-                            sourceBounds = bounds,
-                            sourceView = window?.decorView,
-                        )
-                    },
-                    onLaunchShortcut = { pkg, shortcutId, userSerial, bounds ->
-                        container.appCatalog.startShortcutById(
-                            packageName = pkg,
-                            shortcutId = shortcutId,
-                            userSerial = userSerial,
-                            sourceBounds = bounds,
-                            sourceView = window?.decorView,
-                        )
-                    },
-                    onInvokeQueryChange = invokeViewModel::onQueryChange,
-                    onInvokeClearQuery = invokeViewModel::clearQuery,
-                    onInvokeSelectFilter = invokeViewModel::selectFilter,
-                    onTogglePrivateSpace = invokeViewModel::togglePrivateSpace,
-                    onSavePickedContacts = invokeViewModel::savePickedContacts,
-                    onRemoveQuickContact = invokeViewModel::removeQuickContact,
-                    onTogglePinInDrawer = { appKey ->
-                        scope.launch { container.settingsStore.togglePinnedDrawerApp(appKey) }
-                    },
-                )
-
-                if (!isDefaultLauncher && !dismissedDefaultPrompt) {
-                    SetDefaultLauncherDialog(
-                        onDismiss = { dismissedDefaultPrompt = true },
-                        onConfirm = {
-                            dismissedDefaultPrompt = true
-                            onRequestSetDefaultLauncher()
+                CompositionLocalProvider(
+                    LocalNotificationBadges provides NotificationBadges(settings.badgeStyle, badgeCounts),
+                ) {
+                    HomeCanvas(
+                        settings = settings,
+                        canvasState = canvasState,
+                        installedApps = installedApps,
+                        canvasActions = canvasActions,
+                        invokeUiState = invokeUiState,
+                        studioActions = studioActions,
+                        widgetHost = container.widgetHost,
+                        appCatalog = container.appCatalog,
+                        onSelectWorkspaceMode = { mode ->
+                            scope.launch { container.settingsStore.setWorkspaceMode(mode) }
+                        },
+                        onLaunchApp = { app, bounds ->
+                            container.appCatalog.launch(
+                                app = app,
+                                sourceBounds = bounds,
+                                sourceView = window?.decorView,
+                            )
+                        },
+                        onLaunchShortcut = { pkg, shortcutId, userSerial, bounds ->
+                            container.appCatalog.startShortcutById(
+                                packageName = pkg,
+                                shortcutId = shortcutId,
+                                userSerial = userSerial,
+                                sourceBounds = bounds,
+                                sourceView = window?.decorView,
+                            )
+                        },
+                        onInvokeQueryChange = invokeViewModel::onQueryChange,
+                        onInvokeClearQuery = invokeViewModel::clearQuery,
+                        onInvokeSelectFilter = invokeViewModel::selectFilter,
+                        onTogglePrivateSpace = invokeViewModel::togglePrivateSpace,
+                        onSavePickedContacts = invokeViewModel::savePickedContacts,
+                        onRemoveQuickContact = invokeViewModel::removeQuickContact,
+                        onTogglePinInDrawer = { appKey ->
+                            scope.launch { container.settingsStore.togglePinnedDrawerApp(appKey) }
                         },
                     )
-                }
 
-                pendingPinRequest?.takeIf { it.isValid }?.let { request ->
-                    PinItemConfirmDialog(
-                        request = request,
-                        onDismiss = { pendingPinRequest = null },
-                        onConfirm = {
-                            pendingPinRequest = null
-                            val fallbackBlocks = if (canvasState.isCustomized) {
-                                canvasState.blocks
-                            } else {
-                                buildDefaultCanvasBlocks(installedApps)
-                            }
-                            when (request.requestType) {
-                                LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT -> {
-                                    val info = request.shortcutInfo
-                                    if (info != null && request.accept()) {
-                                        val serial = container.appCatalog.getUserSerial(info.userHandle)
-                                        val label = info.shortLabel?.toString()?.takeIf { it.isNotBlank() }
-                                            ?: info.longLabel?.toString()?.takeIf { it.isNotBlank() }
-                                            ?: info.id
-                                        scope.launch {
-                                            container.homeCanvasStore.addShortcutTile(
-                                                packageName = info.`package`,
-                                                shortcutId = info.id,
-                                                userSerial = serial,
-                                                label = label,
-                                                fallbackDefaults = fallbackBlocks,
-                                                span = TileSpan.COMPACT,
-                                                shape = TileShapePreset.LEAF,
-                                            )
-                                        }
-                                    }
+                    if (!isDefaultLauncher && !dismissedDefaultPrompt) {
+                        SetDefaultLauncherDialog(
+                            onDismiss = { dismissedDefaultPrompt = true },
+                            onConfirm = {
+                                dismissedDefaultPrompt = true
+                                onRequestSetDefaultLauncher()
+                            },
+                        )
+                    }
+
+                    pendingPinRequest?.takeIf { it.isValid }?.let { request ->
+                        PinItemConfirmDialog(
+                            request = request,
+                            onDismiss = { pendingPinRequest = null },
+                            onConfirm = {
+                                pendingPinRequest = null
+                                val fallbackBlocks = if (canvasState.isCustomized) {
+                                    canvasState.blocks
+                                } else {
+                                    buildDefaultCanvasBlocks(installedApps)
                                 }
-
-                                LauncherApps.PinItemRequest.REQUEST_TYPE_APPWIDGET -> {
-                                    val info = request.getAppWidgetProviderInfo(this@MainActivity)
-                                    if (info != null) {
-                                        val widgetId = container.widgetHost.allocateWidgetId()
-                                        val extras = Bundle().apply {
-                                            putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-                                        }
-                                        if (container.widgetHost.tryBindWidget(widgetId, info) &&
-                                            request.accept(extras)
-                                        ) {
+                                when (request.requestType) {
+                                    LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT -> {
+                                        val info = request.shortcutInfo
+                                        if (info != null && request.accept()) {
+                                            val serial = container.appCatalog.getUserSerial(info.userHandle)
+                                            val label = info.shortLabel?.toString()?.takeIf { it.isNotBlank() }
+                                                ?: info.longLabel?.toString()?.takeIf { it.isNotBlank() }
+                                                ?: info.id
                                             scope.launch {
-                                                container.homeCanvasStore.addWidgetBlock(
-                                                    appWidgetId = widgetId,
+                                                container.homeCanvasStore.addShortcutTile(
+                                                    packageName = info.`package`,
+                                                    shortcutId = info.id,
+                                                    userSerial = serial,
+                                                    label = label,
                                                     fallbackDefaults = fallbackBlocks,
-                                                    heightTier = WidgetHeightTier.MEDIUM,
-                                                    shape = TileShapePreset.SQUIRCLE,
+                                                    span = TileSpan.COMPACT,
+                                                    shape = TileShapePreset.LEAF,
                                                 )
                                             }
-                                        } else {
-                                            container.widgetHost.deleteWidgetId(widgetId)
+                                        }
+                                    }
+
+                                    LauncherApps.PinItemRequest.REQUEST_TYPE_APPWIDGET -> {
+                                        val info = request.getAppWidgetProviderInfo(this@MainActivity)
+                                        if (info != null) {
+                                            val widgetId = container.widgetHost.allocateWidgetId()
+                                            val extras = Bundle().apply {
+                                                putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                                            }
+                                            if (container.widgetHost.tryBindWidget(widgetId, info) &&
+                                                request.accept(extras)
+                                            ) {
+                                                scope.launch {
+                                                    container.homeCanvasStore.addWidgetBlock(
+                                                        appWidgetId = widgetId,
+                                                        fallbackDefaults = fallbackBlocks,
+                                                        heightTier = WidgetHeightTier.MEDIUM,
+                                                        shape = TileShapePreset.SQUIRCLE,
+                                                    )
+                                                }
+                                            } else {
+                                                container.widgetHost.deleteWidgetId(widgetId)
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
         }
