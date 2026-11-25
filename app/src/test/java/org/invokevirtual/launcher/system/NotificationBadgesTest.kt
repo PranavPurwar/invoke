@@ -80,6 +80,12 @@ class NotificationBadgesTest {
     }
 
     @Test
+    fun `description uses singular for one notification`() {
+        assertEquals("1 notification", badgeDescription(1))
+        assertEquals("6 notifications", badgeDescription(6))
+    }
+
+    @Test
     fun `label caps at 99 plus`() {
         assertEquals("1", badgeLabel(1))
         assertEquals("99", badgeLabel(99))

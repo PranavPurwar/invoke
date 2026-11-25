@@ -15,14 +15,15 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.invokevirtual.launcher.data.BadgeStyle
 import org.invokevirtual.launcher.system.AppKey
 import org.invokevirtual.launcher.system.BadgeKey
+import org.invokevirtual.launcher.system.badgeDescription
 import org.invokevirtual.launcher.system.badgeLabel
 import org.invokevirtual.launcher.system.totalFor
 
@@ -70,7 +71,7 @@ fun NotificationBadge(
 
     val ring = MaterialTheme.colorScheme.surface
     val fill = MaterialTheme.colorScheme.error
-    val described = modifier.semantics { contentDescription = "$total notifications" }
+    val described = modifier.clearAndSetSemantics { contentDescription = badgeDescription(total) }
 
     if (badges.style == BadgeStyle.DOT) {
         val dot = (iconSize * 0.2f).coerceIn(8.dp, 14.dp)

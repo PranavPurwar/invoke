@@ -40,5 +40,8 @@ internal fun countBadges(candidates: List<BadgeCandidate>): Map<BadgeKey, Int> =
 internal fun Map<BadgeKey, Int>.totalFor(apps: List<AppKey>): Int =
     apps.map { it.badgeKey }.distinct().sumOf { this[it] ?: 0 }
 
+internal fun badgeDescription(count: Int): String =
+    if (count == 1) "1 notification" else "$count notifications"
+
 internal fun badgeLabel(count: Int): String =
     if (count > MAX_BADGE_COUNT) "$MAX_BADGE_COUNT+" else count.toString()
