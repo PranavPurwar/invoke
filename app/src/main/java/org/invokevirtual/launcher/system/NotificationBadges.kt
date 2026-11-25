@@ -27,7 +27,7 @@ val AppKey.badgeKey: BadgeKey
 private const val DEFAULT_CHANNEL_ID = "miscellaneous"
 private const val MAX_BADGE_COUNT = 99
 
-// Same filter as AOSP Launcher3's NotificationListener.notificationIsValidForUI.
+// Follows AOSP Launcher3's NotificationListener.notificationIsValidForUI.
 internal fun countBadges(candidates: List<BadgeCandidate>): Map<BadgeKey, Int> =
     candidates
         .filter { it.canShowBadge }
