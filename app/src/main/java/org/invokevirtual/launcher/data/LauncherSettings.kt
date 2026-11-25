@@ -53,6 +53,12 @@ enum class DockStyle(val label: String) {
     MINIMAL_SEARCH("Search Pill"),
 }
 
+enum class BadgeStyle(val label: String) {
+    OFF("Off"),
+    DOT("Dot"),
+    COUNT("Count"),
+}
+
 enum class LauncherFontPreset(
     val displayName: String,
     val clockFontName: String,
@@ -138,6 +144,7 @@ data class LauncherSettings(
     val drawerTransparency: Float = 0f,
     val showQuickPeople: Boolean = true,
     val bottomSearchBar: Boolean = false,
+    val badgeStyle: BadgeStyle = BadgeStyle.OFF,
 ) {
     /** Night OLED mode forces true-black dark surfaces without mutating the user's daytime preference. */
     val effectiveAmoledBlack: Boolean
@@ -181,6 +188,7 @@ class SettingsStore(private val context: Context) {
         val DRAWER_TRANSPARENCY = floatPreferencesKey("drawer_transparency")
         val SHOW_QUICK_PEOPLE = booleanPreferencesKey("show_quick_people")
         val BOTTOM_SEARCH_BAR = booleanPreferencesKey("bottom_search_bar")
+        val BADGE_STYLE = stringPreferencesKey("badge_style")
     }
 
     val settings: Flow<LauncherSettings> = context.launcherDataStore.data.map { prefs ->
@@ -239,6 +247,9 @@ class SettingsStore(private val context: Context) {
             drawerTransparency = (prefs[Keys.DRAWER_TRANSPARENCY] ?: 0f).coerceIn(0f, 1f),
             showQuickPeople = prefs[Keys.SHOW_QUICK_PEOPLE] ?: true,
             bottomSearchBar = prefs[Keys.BOTTOM_SEARCH_BAR] ?: false,
+            badgeStyle = prefs[Keys.BADGE_STYLE]
+                ?.let { runCatching { BadgeStyle.valueOf(it) }.getOrNull() }
+                ?: BadgeStyle.OFF,
         )
     }
 
@@ -390,6 +401,10 @@ class SettingsStore(private val context: Context) {
         context.launcherDataStore.edit {
             it[Keys.BOTTOM_SEARCH_BAR] = enabled
         }
+    }
+
+    suspend fun setBadgeStyle(style: BadgeStyle) {
+        context.launcherDataStore.edit { it[Keys.BADGE_STYLE] = style.name }
     }
 
     suspend fun setPalette(palette: ExpressivePalette) {

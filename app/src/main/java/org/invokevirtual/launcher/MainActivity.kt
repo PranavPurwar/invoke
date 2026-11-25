@@ -243,6 +243,9 @@ class MainActivity : ComponentActivity() {
                     onToggleBottomSearchBar = { enabled ->
                         scope.launch { container.settingsStore.setBottomSearchBar(enabled) }
                     },
+                    onSelectBadgeStyle = { style ->
+                        scope.launch { container.settingsStore.setBadgeStyle(style) }
+                    },
                     onRequestSetDefaultLauncher = onRequestSetDefaultLauncher,
                 )
             }
