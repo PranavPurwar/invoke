@@ -243,6 +243,9 @@ class MainActivity : ComponentActivity() {
                     onToggleBottomSearchBar = { enabled ->
                         scope.launch { container.settingsStore.setBottomSearchBar(enabled) }
                     },
+                    onToggleDoubleTapToSleep = { enabled ->
+                        scope.launch { container.settingsStore.setDoubleTapToSleep(enabled) }
+                    },
                     onRequestSetDefaultLauncher = onRequestSetDefaultLauncher,
                 )
             }

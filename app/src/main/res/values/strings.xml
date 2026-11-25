@@ -7,4 +7,6 @@
     <string name="mode_everyday">Everyday</string>
     <string name="mode_deep_focus">Deep Focus</string>
     <string name="mode_night_amoled">Night OLED</string>
+    <string name="screen_lock_service_label">Invoke double-tap to sleep</string>
+    <string name="screen_lock_service_description">Lets Invoke turn the screen off when you double-tap empty space on the home screen. It reads no screen content and no events.</string>
 </resources>

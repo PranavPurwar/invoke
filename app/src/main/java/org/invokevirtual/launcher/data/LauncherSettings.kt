@@ -138,6 +138,7 @@ data class LauncherSettings(
     val drawerTransparency: Float = 0f,
     val showQuickPeople: Boolean = true,
     val bottomSearchBar: Boolean = false,
+    val doubleTapToSleep: Boolean = false,
 ) {
     /** Night OLED mode forces true-black dark surfaces without mutating the user's daytime preference. */
     val effectiveAmoledBlack: Boolean
@@ -181,6 +182,7 @@ class SettingsStore(private val context: Context) {
         val DRAWER_TRANSPARENCY = floatPreferencesKey("drawer_transparency")
         val SHOW_QUICK_PEOPLE = booleanPreferencesKey("show_quick_people")
         val BOTTOM_SEARCH_BAR = booleanPreferencesKey("bottom_search_bar")
+        val DOUBLE_TAP_TO_SLEEP = booleanPreferencesKey("double_tap_to_sleep")
     }
 
     val settings: Flow<LauncherSettings> = context.launcherDataStore.data.map { prefs ->
@@ -239,6 +241,7 @@ class SettingsStore(private val context: Context) {
             drawerTransparency = (prefs[Keys.DRAWER_TRANSPARENCY] ?: 0f).coerceIn(0f, 1f),
             showQuickPeople = prefs[Keys.SHOW_QUICK_PEOPLE] ?: true,
             bottomSearchBar = prefs[Keys.BOTTOM_SEARCH_BAR] ?: false,
+            doubleTapToSleep = prefs[Keys.DOUBLE_TAP_TO_SLEEP] ?: false,
         )
     }
 
@@ -390,6 +393,10 @@ class SettingsStore(private val context: Context) {
         context.launcherDataStore.edit {
             it[Keys.BOTTOM_SEARCH_BAR] = enabled
         }
+    }
+
+    suspend fun setDoubleTapToSleep(enabled: Boolean) {
+        context.launcherDataStore.edit { it[Keys.DOUBLE_TAP_TO_SLEEP] = enabled }
     }
 
     suspend fun setPalette(palette: ExpressivePalette) {

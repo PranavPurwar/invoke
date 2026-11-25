@@ -81,6 +81,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import org.invokevirtual.launcher.data.ClockAlignment
 import org.invokevirtual.launcher.data.ClockSize
 import org.invokevirtual.launcher.data.ClockStyle
@@ -98,6 +99,7 @@ import org.invokevirtual.launcher.system.AppIconAsset
 import org.invokevirtual.launcher.system.AppKey
 import org.invokevirtual.launcher.system.DefaultLauncherHelper
 import org.invokevirtual.launcher.system.InstalledApp
+import org.invokevirtual.launcher.system.ScreenLock
 import org.invokevirtual.launcher.ui.components.InteractiveColorPicker
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
 import org.invokevirtual.launcher.ui.theme.InvokeShapes
@@ -140,6 +142,7 @@ data class StudioActions(
     val onSetDrawerTransparency: (Float) -> Unit = {},
     val onToggleShowQuickPeople: (Boolean) -> Unit = {},
     val onToggleBottomSearchBar: (Boolean) -> Unit = {},
+    val onToggleDoubleTapToSleep: (Boolean) -> Unit = {},
     val onRequestSetDefaultLauncher: () -> Unit = {},
 )
 
@@ -1148,6 +1151,17 @@ internal fun CustomizationStudioContent(
                     }
                 }
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                item(key = "gestures") {
+                    StudioSection(title = "Gestures") {
+                        DoubleTapToSleepControls(
+                            enabled = settings.doubleTapToSleep,
+                            onToggle = actions.onToggleDoubleTapToSleep,
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -1547,6 +1561,55 @@ private fun PaletteSwatchOption(
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
         )
+    }
+}
+
+@Composable
+private fun DoubleTapToSleepControls(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    val context = LocalContext.current
+    var serviceEnabled by remember { mutableStateOf(ScreenLock.isServiceEnabled(context)) }
+    LifecycleResumeEffect(Unit) {
+        serviceEnabled = ScreenLock.isServiceEnabled(context)
+        onPauseOrDispose {}
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        StudioSwitchRow(
+            title = "Double-Tap to Sleep",
+            subtitle = "Double-tap empty space on Home to turn the screen off",
+            checked = enabled,
+            shape = RoundedCornerShape(20.dp),
+            onCheckedChange = {
+                onToggle(it)
+                if (it && !serviceEnabled) ScreenLock.openSettings(context)
+            },
+        )
+        if (enabled && !serviceEnabled) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { ScreenLock.openSettings(context) },
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text(
+                        text = "Turn on the Invoke accessibility service",
+                        style = MaterialTheme.typography.titleSmallEmphasized,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    Text(
+                        text = "It only turns the screen off. If the switch is greyed out, open App info and allow restricted settings first.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
+                    )
+                }
+            }
+        }
     }
 }
 
