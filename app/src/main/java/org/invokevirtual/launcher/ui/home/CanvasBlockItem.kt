@@ -74,6 +74,8 @@ import org.invokevirtual.launcher.system.AppIconAsset
 import org.invokevirtual.launcher.system.AppShortcutItem
 import org.invokevirtual.launcher.system.InstalledApp
 import org.invokevirtual.launcher.system.WidgetHostController
+import org.invokevirtual.launcher.ui.components.NotificationBadge
+import org.invokevirtual.launcher.ui.components.NotificationBadgeBox
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
 import org.invokevirtual.launcher.ui.theme.LocalReducedMotion
 import org.invokevirtual.launcher.ui.theme.rememberAnimatedContainerMorphShape
@@ -130,16 +132,18 @@ fun CanvasAppBlockCard(
         modifier = modifier,
         iconContent = { iconSize, morphShape ->
             val isContainerTile = !isFloating
-            ShapedAppIcon(
-                iconAsset = iconAsset,
-                fallbackGlyph = fallbackGlyph,
-                iconStyle = iconStyle,
-                shape = if (isContainerTile) RoundedCornerShape(percent = 26) else morphShape,
-                size = iconSize,
-                monochromeBg = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
-                monochromeFg = contentColor,
-                forceContainerBg = !isContainerTile && block.customBgArgb != null,
-            )
+            NotificationBadgeBox(apps = listOfNotNull(app?.key), iconSize = iconSize) {
+                ShapedAppIcon(
+                    iconAsset = iconAsset,
+                    fallbackGlyph = fallbackGlyph,
+                    iconStyle = iconStyle,
+                    shape = if (isContainerTile) RoundedCornerShape(percent = 26) else morphShape,
+                    size = iconSize,
+                    monochromeBg = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
+                    monochromeFg = contentColor,
+                    forceContainerBg = !isContainerTile && block.customBgArgb != null,
+                )
+            }
         },
     )
 }
@@ -510,6 +514,11 @@ fun CanvasFolderBlockCard(
                             color = contentColor.copy(alpha = 0.76f),
                             maxLines = 1,
                         )
+                        NotificationBadge(
+                            apps = folderApps.map { it.key },
+                            iconSize = 48.dp,
+                            modifier = Modifier.padding(start = 6.dp),
+                        )
                     }
 
                     FolderBentoMosaic(
@@ -550,15 +559,17 @@ fun CanvasFolderBlockCard(
             modifier = modifier,
             iconContent = { iconSize, morphShape ->
                 val isContainerTile = !isFloating
-                FolderMiniGridIcon(
-                    previewApps = folderApps.take(4),
-                    iconStyle = iconStyle,
-                    shape = morphShape,
-                    size = iconSize,
-                    bgColor = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
-                    fgColor = contentColor,
-                    appCatalog = appCatalog,
-                )
+                NotificationBadgeBox(apps = folderApps.map { it.key }, iconSize = iconSize) {
+                    FolderMiniGridIcon(
+                        previewApps = folderApps.take(4),
+                        iconStyle = iconStyle,
+                        shape = morphShape,
+                        size = iconSize,
+                        bgColor = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
+                        fgColor = contentColor,
+                        appCatalog = appCatalog,
+                    )
+                }
             },
         )
     }

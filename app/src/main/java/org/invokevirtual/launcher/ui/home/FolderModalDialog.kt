@@ -91,6 +91,7 @@ import org.invokevirtual.launcher.system.AppIconAsset
 import org.invokevirtual.launcher.system.AppKey
 import org.invokevirtual.launcher.system.AppProfile
 import org.invokevirtual.launcher.system.InstalledApp
+import org.invokevirtual.launcher.ui.components.NotificationBadgeBox
 import org.invokevirtual.launcher.ui.components.TileIconGlyph
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
 import org.invokevirtual.launcher.ui.theme.InvokeTheme
@@ -1467,16 +1468,18 @@ private fun FolderGridAppTileCard(
         modifier = modifier,
         iconContent = { iconSize, morphShape ->
             val isContainerTile = !isFloating
-            ShapedAppIcon(
-                iconAsset = iconAsset,
-                fallbackGlyph = InvokeIcons.Apps,
-                iconStyle = iconStyle,
-                shape = if (isContainerTile) RoundedCornerShape(percent = 26) else morphShape,
-                size = iconSize,
-                monochromeBg = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
-                monochromeFg = contentColor,
-                forceContainerBg = !isContainerTile && item.customBgArgb != null,
-            )
+            NotificationBadgeBox(apps = listOf(app.key), iconSize = iconSize) {
+                ShapedAppIcon(
+                    iconAsset = iconAsset,
+                    fallbackGlyph = InvokeIcons.Apps,
+                    iconStyle = iconStyle,
+                    shape = if (isContainerTile) RoundedCornerShape(percent = 26) else morphShape,
+                    size = iconSize,
+                    monochromeBg = if (isContainerTile) contentColor.copy(alpha = 0.11f) else containerColor,
+                    monochromeFg = contentColor,
+                    forceContainerBg = !isContainerTile && item.customBgArgb != null,
+                )
+            }
         },
     )
 }
@@ -1566,15 +1569,17 @@ private fun BentoVerticalAppCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
-            ShapedAppIcon(
-                iconAsset = iconAsset,
-                fallbackGlyph = InvokeIcons.Apps,
-                iconStyle = iconStyle,
-                shape = iconShape,
-                size = iconSize,
-                monochromeBg = contentColor.copy(alpha = 0.14f),
-                monochromeFg = contentColor,
-            )
+            NotificationBadgeBox(apps = listOf(app.key), iconSize = iconSize) {
+                ShapedAppIcon(
+                    iconAsset = iconAsset,
+                    fallbackGlyph = InvokeIcons.Apps,
+                    iconStyle = iconStyle,
+                    shape = iconShape,
+                    size = iconSize,
+                    monochromeBg = contentColor.copy(alpha = 0.14f),
+                    monochromeFg = contentColor,
+                )
+            }
             Text(
                 text = app.label,
                 style = MaterialTheme.typography.titleMediumEmphasized,
@@ -1673,15 +1678,17 @@ private fun BentoHorizontalAppCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ShapedAppIcon(
-                iconAsset = iconAsset,
-                fallbackGlyph = InvokeIcons.Apps,
-                iconStyle = iconStyle,
-                shape = iconShape,
-                size = iconSize,
-                monochromeBg = contentColor.copy(alpha = 0.14f),
-                monochromeFg = contentColor,
-            )
+            NotificationBadgeBox(apps = listOf(app.key), iconSize = iconSize) {
+                ShapedAppIcon(
+                    iconAsset = iconAsset,
+                    fallbackGlyph = InvokeIcons.Apps,
+                    iconStyle = iconStyle,
+                    shape = iconShape,
+                    size = iconSize,
+                    monochromeBg = contentColor.copy(alpha = 0.14f),
+                    monochromeFg = contentColor,
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -1790,15 +1797,17 @@ private fun BentoCompactAppCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
         ) {
-            ShapedAppIcon(
-                iconAsset = iconAsset,
-                fallbackGlyph = InvokeIcons.Apps,
-                iconStyle = iconStyle,
-                shape = iconShape,
-                size = 38.dp,
-                monochromeBg = contentColor.copy(alpha = 0.14f),
-                monochromeFg = contentColor,
-            )
+            NotificationBadgeBox(apps = listOf(app.key), iconSize = 38.dp) {
+                ShapedAppIcon(
+                    iconAsset = iconAsset,
+                    fallbackGlyph = InvokeIcons.Apps,
+                    iconStyle = iconStyle,
+                    shape = iconShape,
+                    size = 38.dp,
+                    monochromeBg = contentColor.copy(alpha = 0.14f),
+                    monochromeFg = contentColor,
+                )
+            }
             Text(
                 text = app.label,
                 style = MaterialTheme.typography.labelSmallEmphasized,

@@ -113,6 +113,7 @@ import org.invokevirtual.launcher.system.AppShortcutItem
 import org.invokevirtual.launcher.system.ContactsPickerHelper
 import org.invokevirtual.launcher.system.InstalledApp
 import org.invokevirtual.launcher.system.PrivateSpaceState
+import org.invokevirtual.launcher.ui.components.NotificationBadgeBox
 import org.invokevirtual.launcher.ui.components.TileIconGlyph
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
 import org.invokevirtual.launcher.ui.theme.InvokeTheme
@@ -1134,20 +1135,22 @@ private fun InvokeAppRow(
                 )
             },
         leadingContent = {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                TileIconGlyph(
-                    iconAsset = iconAsset,
-                    fallbackGlyph = InvokeIcons.Apps,
-                    iconStyle = iconStyle,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp),
-                )
+            NotificationBadgeBox(apps = listOf(app.key), iconSize = 48.dp) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TileIconGlyph(
+                        iconAsset = iconAsset,
+                        fallbackGlyph = InvokeIcons.Apps,
+                        iconStyle = iconStyle,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
             }
         },
         supportingContent = if (app.isWorkProfile) {

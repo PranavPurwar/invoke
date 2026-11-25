@@ -82,6 +82,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import org.invokevirtual.launcher.data.BadgeStyle
 import org.invokevirtual.launcher.data.ClockAlignment
 import org.invokevirtual.launcher.data.ClockSize
 import org.invokevirtual.launcher.data.ClockStyle
@@ -99,6 +100,7 @@ import org.invokevirtual.launcher.system.AppIconAsset
 import org.invokevirtual.launcher.system.AppKey
 import org.invokevirtual.launcher.system.DefaultLauncherHelper
 import org.invokevirtual.launcher.system.InstalledApp
+import org.invokevirtual.launcher.system.NotificationAccess
 import org.invokevirtual.launcher.system.ScreenLock
 import org.invokevirtual.launcher.ui.components.InteractiveColorPicker
 import org.invokevirtual.launcher.ui.theme.InvokeIcons
@@ -143,6 +145,7 @@ data class StudioActions(
     val onToggleShowQuickPeople: (Boolean) -> Unit = {},
     val onToggleBottomSearchBar: (Boolean) -> Unit = {},
     val onToggleDoubleTapToSleep: (Boolean) -> Unit = {},
+    val onSelectBadgeStyle: (BadgeStyle) -> Unit = {},
     val onRequestSetDefaultLauncher: () -> Unit = {},
 )
 
@@ -1148,6 +1151,10 @@ internal fun CustomizationStudioContent(
                                 onCheckedChange = actions.onToggleExpressiveMotion,
                             )
                         }
+                        NotificationBadgeControls(
+                            style = settings.badgeStyle,
+                            onSelect = actions.onSelectBadgeStyle,
+                        )
                     }
                 }
             }
@@ -1604,6 +1611,62 @@ private fun DoubleTapToSleepControls(
                     )
                     Text(
                         text = "It only turns the screen off. If the switch is greyed out, open App info and allow restricted settings first.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationBadgeControls(
+    style: BadgeStyle,
+    onSelect: (BadgeStyle) -> Unit,
+) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    var accessGranted by remember { mutableStateOf(NotificationAccess.isGranted(context)) }
+    LifecycleResumeEffect(Unit) {
+        accessGranted = NotificationAccess.isGranted(context)
+        onPauseOrDispose {}
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Notification Badges",
+            style = MaterialTheme.typography.titleSmallEmphasized,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 6.dp),
+        )
+        ConnectedToggleSelector(
+            options = BadgeStyle.entries,
+            selected = style,
+            labelOf = { it.label },
+            onSelect = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onSelect(it)
+                if (it != BadgeStyle.OFF && !accessGranted) NotificationAccess.openSettings(context)
+            },
+        )
+        if (style != BadgeStyle.OFF && !accessGranted) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { NotificationAccess.openSettings(context) },
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text(
+                        text = "Allow notification access",
+                        style = MaterialTheme.typography.titleSmallEmphasized,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    Text(
+                        text = "Badges need it. If the switch is greyed out, open App info and allow restricted settings first.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
                     )
