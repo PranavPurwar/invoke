@@ -37,5 +37,10 @@ class ScreenLockService : AccessibilityService() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
             return instance?.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN) ?: false
         }
+
+        /** Turns the service off in system settings, so the access ends with the feature. */
+        fun disable() {
+            instance?.disableSelf()
+        }
     }
 }

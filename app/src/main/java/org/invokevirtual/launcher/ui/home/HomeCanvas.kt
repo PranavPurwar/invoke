@@ -434,7 +434,9 @@ fun HomeCanvas(
                     onDoubleTap = if (settings.doubleTapToSleep) {
                         { offset ->
                             val action = doubleTapAction(
-                                enabled = !doubleTapExclusions.contains(offset + rootOrigin),
+                                enabled = true,
+                                supported = ScreenLock.isSupported,
+                                excluded = doubleTapExclusions.contains(offset + rootOrigin),
                                 isEditMode = isEditMode,
                                 serviceConnected = ScreenLockService.isConnected,
                             )

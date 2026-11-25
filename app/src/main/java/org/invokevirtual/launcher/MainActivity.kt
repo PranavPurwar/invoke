@@ -42,6 +42,7 @@ import org.invokevirtual.launcher.data.TileShapePreset
 import org.invokevirtual.launcher.data.TileSpan
 import org.invokevirtual.launcher.data.WidgetHeightTier
 import org.invokevirtual.launcher.system.DefaultLauncherHelper
+import org.invokevirtual.launcher.system.ScreenLockService
 import org.invokevirtual.launcher.system.rememberWallpaperLegibility
 import org.invokevirtual.launcher.ui.home.HomeCanvas
 import org.invokevirtual.launcher.ui.home.HomeCanvasActions
@@ -245,6 +246,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onToggleDoubleTapToSleep = { enabled ->
                         scope.launch { container.settingsStore.setDoubleTapToSleep(enabled) }
+                        if (!enabled) ScreenLockService.disable()
                     },
                     onRequestSetDefaultLauncher = onRequestSetDefaultLauncher,
                 )
