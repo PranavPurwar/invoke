@@ -103,8 +103,12 @@ import org.invokevirtual.launcher.system.AppCatalog
 import org.invokevirtual.launcher.system.AppKey
 import org.invokevirtual.launcher.system.AppShortcutItem
 import org.invokevirtual.launcher.system.ContactsPickerHelper
+import org.invokevirtual.launcher.system.DoubleTapAction
 import org.invokevirtual.launcher.system.InstalledApp
+import org.invokevirtual.launcher.system.ScreenLock
+import org.invokevirtual.launcher.system.ScreenLockService
 import org.invokevirtual.launcher.system.WidgetHostController
+import org.invokevirtual.launcher.system.doubleTapAction
 import org.invokevirtual.launcher.ui.components.AppActionSheet
 import org.invokevirtual.launcher.ui.invoke.InvokeFilter
 import org.invokevirtual.launcher.ui.invoke.InvokeSheet
@@ -420,8 +424,24 @@ fun HomeCanvas(
         modifier = modifier
             .fillMaxSize()
             .then(scrimModifier)
-            .pointerInput(isEditMode) {
+            .pointerInput(isEditMode, settings.doubleTapToSleep) {
                 detectTapGestures(
+                    onDoubleTap = if (settings.doubleTapToSleep) {
+                        {
+                            val action = doubleTapAction(
+                                enabled = true,
+                                isEditMode = isEditMode,
+                                serviceConnected = ScreenLockService.isConnected,
+                            )
+                            when (action) {
+                                DoubleTapAction.LOCK -> ScreenLockService.lock()
+                                DoubleTapAction.OPEN_SETTINGS -> ScreenLock.openSettings(context)
+                                DoubleTapAction.NONE -> Unit
+                            }
+                        }
+                    } else {
+                        null
+                    },
                     onLongPress = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         isEditMode = !isEditMode
