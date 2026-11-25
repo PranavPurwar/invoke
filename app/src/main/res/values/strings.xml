@@ -7,4 +7,5 @@
     <string name="mode_everyday">Everyday</string>
     <string name="mode_deep_focus">Deep Focus</string>
     <string name="mode_night_amoled">Night OLED</string>
+    <string name="notification_badges_service_label">Invoke notification badges</string>
 </resources>
